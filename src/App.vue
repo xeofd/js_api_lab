@@ -3,7 +3,17 @@
     <h1>Charts</h1>
     <display-data :energyData="energyData" :generationMix="gChartData"></display-data>
 
-    <p>{{ gChartData }}</p>
+    <div>
+      <form v-on:submit.prevent="handleInput">
+          <label for="data_from">Date From:</label>
+          <input type="datetime-local" v-model="userFrom" placeholder="Date From" /><br />
+          <label for="data_from">Date To:</label>
+          <input type="datetime-local" v-model="userTo" placeholder="Date To"/>
+          <input type="submit" value="Enter dates" />
+      </form> 
+
+      <display-data v-if="userGChartData" :generationMix="userGChartData"></display-data> 
+    </div>    
   </div>
 </template>
 
@@ -18,39 +28,54 @@ export default {
     return{
       // App data
       energyData: [],
-      gChartData: [['Fuel', 'Percentage']]
+      gChartData: [['Fuel', 'Percentage']],
+      userGChartData: [['Fuel', 'Percentage']],
+      userFrom: null,
+      userTo: null
     }
   },
   methods: {
-    apiCall: function(){
+    apiCall: function(location, from=null, to=null){
       // Fetch the API data
-      fetch("https://api.carbonintensity.org.uk/generation")
+      let url;
+      if (!from && !to){
+        url = "https://api.carbonintensity.org.uk/generation"
+      } else {
+        url = `https://api.carbonintensity.org.uk/generation/${from}/${to}`
+      }
+      fetch(url)
       .then(response => response.json())
       .then((data) => {
         this.energyData = data.data;
-        this.gChartDataFormat();
+        this.gChartDataFormat(location);
         });
     },
-    gChartDataFormat: function(){
+    gChartDataFormat: function(location){
       // Make empty array
       let mix = [];
 
-      // Grab the dataset
-      // for (type in this.energyData.generationmix){
-      //   mix.push(type.fuel);
-      //   mix.push(int(type.perc));
-      //   this.gChartData.push(mix);
-      // }
       this.energyData.generationmix.forEach((type) => {
         mix.push(type.fuel);
         mix.push(type.perc);
-        this.gChartData.push(mix);
+        location.push(mix);
         mix = [];
       });
+    },
+    handleInput: function(){
+      // Grab input, convert to date
+      let from = new Date(this.userFrom).toISOString();
+      let to = new Date(this.userTo).toISOString();
+
+      // Destroy seconds
+      from  = from.split('.')[0]+"Z";
+      to = to.split('.')[0]+"Z";
+
+      // Call API
+      this.apiCall(this.userGChartData, from, to);
     }
   },
   mounted() {
-    this.apiCall()
+    this.apiCall(this.gChartData)
   },
   components: {
     "display-data": displayData

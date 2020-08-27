@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h2>Time between: {{ energyData.from }} and {{ energyData.to }}</h2>
-        <g-chart type="ColumnChart" :data="generationMix"></g-chart>
+        <!-- <h2>Time between: {{ energyData.from }} and {{ energyData.to }}</h2> -->
+        <g-chart type="PieChart" :data="generationMix"></g-chart>
     </div>
 </template>
 
