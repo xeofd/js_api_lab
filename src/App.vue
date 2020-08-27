@@ -1,28 +1,63 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <h1>Charts</h1>
+    <display-data :energyData="energyData" :generationMix="gChartData"></display-data>
+
+    <p>{{ gChartData }}</p>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+// Imports
+import displayData from "./components/displayData";
 
+// App component
 export default {
-  name: 'App',
+  name: "app",
+  data(){
+    return{
+      // App data
+      energyData: [],
+      gChartData: [['Fuel', 'Percentage']]
+    }
+  },
+  methods: {
+    apiCall: function(){
+      // Fetch the API data
+      fetch("https://api.carbonintensity.org.uk/generation")
+      .then(response => response.json())
+      .then((data) => {
+        this.energyData = data.data;
+        this.gChartDataFormat();
+        });
+    },
+    gChartDataFormat: function(){
+      // Make empty array
+      let mix = [];
+
+      // Grab the dataset
+      // for (type in this.energyData.generationmix){
+      //   mix.push(type.fuel);
+      //   mix.push(int(type.perc));
+      //   this.gChartData.push(mix);
+      // }
+      this.energyData.generationmix.forEach((type) => {
+        mix.push(type.fuel);
+        mix.push(type.perc);
+        this.gChartData.push(mix);
+        mix = [];
+      });
+    }
+  },
+  mounted() {
+    this.apiCall()
+  },
   components: {
-    HelloWorld
+    "display-data": displayData
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
